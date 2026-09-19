@@ -68,11 +68,35 @@ allure generate allure-results --clean -o allure-report
 allure open allure-report
 ```
 
+## Code quality
+
+Ruff and Pylint are included in the project dependencies and configured in
+[`pyproject.toml`](pyproject.toml). Run the same checks locally that the CI
+quality gate runs:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pylint tests/ config/ --fail-under=8.0
+```
+
+To automatically apply Ruff formatting, run:
+
+```bash
+uv run ruff format .
+```
+
+Ruff checks lint rules and formatting across the repository. Pylint analyzes
+the `tests/` and `config/` packages and requires a score of at least 8.0.
+
 ## CI/CD
 
 GitHub Actions is configured in
 [`.github/workflows/api-tests.yml`](.github/workflows/api-tests.yml).
 
+- A **Lint & Static Analysis** quality gate runs Ruff linting, Ruff format
+  checks, and Pylint before every test job. A failed lint check prevents the
+  dependent smoke or regression suite from running.
 - **Pull requests and pushes** to `main` or `master` run the smoke suite.
 - **Scheduled runs** execute the regression suite every day at **07:00 UTC**
   (`0 7 * * *`; 02:00 EST / 03:00 EDT).
