@@ -20,9 +20,7 @@ from requests import Session
 class TestPostsSmoke:
     """Critical-path smoke tests for the /posts resource."""
 
-    def test_list_posts(
-        self, api_session: Session, validate_schema: callable
-    ) -> None:
+    def test_list_posts(self, api_session: Session, validate_schema: callable) -> None:
         """GET /posts returns a list of posts (critical read path)."""
         response = api_session.get("/posts")
 
@@ -31,9 +29,7 @@ class TestPostsSmoke:
         validate_schema(posts, "posts_list_schema.json")
         assert len(posts) == 100
 
-    def test_get_single_post(
-        self, api_session: Session, validate_schema: callable
-    ) -> None:
+    def test_get_single_post(self, api_session: Session, validate_schema: callable) -> None:
         """GET /posts/1 returns a valid post (critical read-by-id path)."""
         response = api_session.get("/posts/1")
 
@@ -42,9 +38,7 @@ class TestPostsSmoke:
         validate_schema(post, "post_schema.json")
         assert post["id"] == 1
 
-    def test_create_post(
-        self, api_session: Session, validate_schema: callable
-    ) -> None:
+    def test_create_post(self, api_session: Session, validate_schema: callable) -> None:
         """POST /posts creates a resource (critical write path)."""
         payload = {
             "title": "Smoke Test Post",
@@ -59,9 +53,7 @@ class TestPostsSmoke:
         validate_schema(created, "post_schema.json")
         assert created["title"] == payload["title"]
 
-    def test_update_post(
-        self, api_session: Session, validate_schema: callable
-    ) -> None:
+    def test_update_post(self, api_session: Session, validate_schema: callable) -> None:
         """PUT /posts/1 replaces the resource (critical update path)."""
         payload = {
             "id": 1,

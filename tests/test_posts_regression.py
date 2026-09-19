@@ -33,9 +33,7 @@ class TestReadPostsRegression:
         assert post["id"] == post_id
 
     @pytest.mark.parametrize("post_id", [9999, 0, -1])
-    def test_get_invalid_post_returns_404(
-        self, api_session: Session, post_id: int
-    ) -> None:
+    def test_get_invalid_post_returns_404(self, api_session: Session, post_id: int) -> None:
         """GET /posts/{id} with invalid IDs returns 404 with empty body."""
         response = api_session.get(f"/posts/{post_id}")
 
@@ -96,9 +94,7 @@ class TestUpdatePostRegression:
         assert "id" in patched
 
     @pytest.mark.parametrize("bad_id", [9999, 0])
-    def test_put_nonexistent_post_returns_500(
-        self, api_session: Session, bad_id: int
-    ) -> None:
+    def test_put_nonexistent_post_returns_500(self, api_session: Session, bad_id: int) -> None:
         """
         PUT /posts/{id} on a nonexistent resource returns 500.
 
@@ -121,9 +117,7 @@ class TestDeletePostRegression:
     """Edge-case delete coverage for /posts."""
 
     @pytest.mark.parametrize("post_id", [9999, 0])
-    def test_delete_nonexistent_post(
-        self, api_session: Session, post_id: int
-    ) -> None:
+    def test_delete_nonexistent_post(self, api_session: Session, post_id: int) -> None:
         """DELETE /posts/{id} on nonexistent resources returns 200 (mock)."""
         response = api_session.delete(f"/posts/{post_id}")
 

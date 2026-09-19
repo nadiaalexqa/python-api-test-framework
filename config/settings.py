@@ -5,8 +5,9 @@ Loads settings from environment variables with sensible defaults.
 Local development reads from .env; CI reads from GitHub Secrets.
 """
 
-import os
 from dataclasses import dataclass
+import os
+
 from dotenv import load_dotenv
 
 # Load .env for local development. In CI, env vars are already set.

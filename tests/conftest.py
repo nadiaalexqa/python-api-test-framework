@@ -7,10 +7,10 @@ Designed to run identically locally and in GitHub Actions:
 - Explicit timeouts on every request prevent CI hangs.
 """
 
+from collections.abc import Generator
 import json
 import os
 from pathlib import Path
-from typing import Generator
 
 import allure
 import jsonschema
@@ -44,10 +44,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 # Allure Environment Info (shown at the top of the report)
 # ============================================================
 @pytest.fixture(scope="session", autouse=True)
-def allure_environment(request: pytest.FixtureRequest) -> Generator[None, None, None]:
+def allure_environment(request: pytest.FixtureRequest) -> None:
     """Write environment info to allure-results so CI reports show context."""
-    results_dir = "allure-results"
-    os.makedirs(results_dir, exist_ok=True)
+    results_dir = Path("allure-results")
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     env_info = {
         "Base.URL": settings.base_url,
@@ -60,11 +60,9 @@ def allure_environment(request: pytest.FixtureRequest) -> Generator[None, None, 
         "Git.SHA": os.getenv("GITHUB_SHA", "local")[:7],
     }
 
-    with open(os.path.join(results_dir, "environment.properties"), "w") as f:
+    with (results_dir / "environment.properties").open("w", encoding="utf-8") as f:
         for key, value in env_info.items():
             f.write(f"{key}={value}\n")
-
-    yield
 
 
 # ============================================================
@@ -153,7 +151,7 @@ def validate_schema() -> callable:
 
     def _validate(payload: object, schema_filename: str) -> None:
         schema_path = schemas_dir / schema_filename
-        with open(schema_path, encoding="utf-8") as f:
+        with schema_path.open(encoding="utf-8") as f:
             schema = json.load(f)
 
         try:

@@ -71,8 +71,7 @@ ignore-docstrings = true
 ignore-imports = true
 
 # ==============================================================
-# Ruff — Fast Python linter & formatter (replaces Flake8, isort, etc.)
-# Docs: https://docs.astral.sh/ruff/configuration/
+# Ruff — Fast Python linter & formatter
 # ==============================================================
 [tool.ruff]
 line-length = 100
@@ -92,37 +91,31 @@ exclude = [
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
-    "F",    # pyflakes (unused imports, undefined names)
-    "I",    # isort (import sorting)
+    "F",    # pyflakes
+    "I",    # isort
     "N",    # pep8-naming
-    "UP",   # pyupgrade (modernize syntax)
-    "B",    # flake8-bugbear (likely bugs)
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
     "C4",   # flake8-comprehensions
     "SIM",  # flake8-simplify
     "PTH",  # flake8-use-pathlib
-    "ERA",  # eradicate (commented-out code)
+    "ERA",  # eradicate
     "RUF",  # ruff-specific rules
     "PT",   # flake8-pytest-style
     "RET",  # flake8-return
     "ARG",  # flake8-unused-arguments
-    "DTZ",  # flake8-datetimez (timezone-aware datetimes)
+    "DTZ",  # flake8-datetimez
     "T20",  # flake8-print
     "Q",    # flake8-quotes
 ]
 
 ignore = [
-    # --- pytest conventions ---
-    "PT004",   # fixture does not return anything
     "PT011",   # pytest.raises(Exception) too broad
     "PT012",   # pytest.raises block should contain a single statement
     "ARG001",  # unused function argument (pytest fixtures)
     "ARG002",  # unused method argument
-    # --- Test-friendly ---
     "RET504",  # unnecessary assignment before return
     "RET505",  # superfluous-else-return
-    "TRY003",  # long exception messages
-    "TRY300",  # try-else
-    "TRY301",  # abstract raise to inner function
     "B008",    # function call in default arg (pytest idiom)
 ]
 
@@ -143,7 +136,7 @@ force-sort-within-sections = true
 fixture-parentheses = false
 mark-parentheses = false
 parametrize-names-type = "tuple"
-parametrize-values-type = "tuple"
+parametrize-values-type = "list"
 
 [tool.ruff.format]
 quote-style = "double"
