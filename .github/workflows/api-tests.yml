@@ -1,0 +1,122 @@
+name: API Tests
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+  schedule:
+    # Nightly regression at 07:00 UTC (02:00 EST / 03:00 EDT)
+    # GitHub Actions only supports UTC cron expressions.
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - regression
+          - all
+
+env:
+  BASE_URL: ${{ vars.BASE_URL || 'https://jsonplaceholder.typicode.com' }}
+  API_TIMEOUT: ${{ vars.API_TIMEOUT || '10' }}
+
+jobs:
+  smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    # Runs on PRs, pushes to main, or manual dispatch of smoke/all
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.suite == 'smoke' || inputs.suite == 'all'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run smoke tests
+        run: uv run pytest -m smoke
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate allure-results --clean -o allure-report
+
+      - name: Upload Allure results (raw)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-smoke
+          path: allure-results/
+          retention-days: 14
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-smoke
+          path: allure-report/
+          retention-days: 14
+
+  regression:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    # Runs nightly, or manual dispatch of regression/all
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.suite == 'regression' || inputs.suite == 'all'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run regression tests
+        run: uv run pytest -m regression
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate allure-results --clean -o allure-report
+
+      - name: Upload Allure results (raw)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-regression
+          path: allure-results/
+          retention-days: 14
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-regression
+          path: allure-report/
+          retention-days: 14
