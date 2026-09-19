@@ -26,10 +26,43 @@ env:
   API_TIMEOUT: ${{ vars.API_TIMEOUT || '10' }}
 
 jobs:
+  # ============================================================
+  # Quality Gate: Lint & Static Analysis (runs first, blocks tests)
+  # ============================================================
+  lint:
+    name: Lint & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Ruff (lint)
+        run: uv run ruff check .
+
+      - name: Run Ruff (format check)
+        run: uv run ruff format --check .
+
+      - name: Run Pylint
+        run: uv run pylint tests/ config/ --fail-under=8.0
+
+  # ============================================================
+  # Smoke Tests: fast feedback on PRs and pushes to main
+  # ============================================================
   smoke:
     name: Smoke Tests
+    needs: lint
     runs-on: ubuntu-latest
-    # Runs on PRs, pushes to main, or manual dispatch of smoke/all
     if: |
       github.event_name == 'pull_request' ||
       github.event_name == 'push' ||
@@ -74,10 +107,13 @@ jobs:
           path: allure-report/
           retention-days: 14
 
+  # ============================================================
+  # Regression Tests: full suite, nightly and manual only
+  # ============================================================
   regression:
     name: Regression Tests
+    needs: lint
     runs-on: ubuntu-latest
-    # Runs nightly, or manual dispatch of regression/all
     if: |
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.suite == 'regression' || inputs.suite == 'all'))
