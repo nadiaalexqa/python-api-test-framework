@@ -1,0 +1,159 @@
+[project]
+name = "python-api-test-framework"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "allure-pytest>=2.16.1",
+    "faker>=40.39.0",
+    "jsonschema>=4.26.0",
+    "mypy>=2.3.1",
+    "pydantic>=2.13.5",
+    "pylint>=3.0",
+    "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
+    "python-dotenv>=1.2.3",
+    "requests>=2.34.2",
+    "ruff>=0.16.8",
+]
+
+[dependency-groups]
+dev = [
+    "pylint>=4.0.8",
+    "pylint-pytest>=1.1.7",
+    "ruff>=0.16.8",
+]
+[tool.pylint.MAIN]
+py-version = "3.14"
+jobs = 0  # Auto-detect number of CPUs
+persistent = false
+
+[tool.pylint.FORMAT]
+max-line-length = 100
+max-module-lines = 1000
+
+[tool.pylint.MESSAGES_CONTROL]
+disable = [
+    # --- Test-specific false positives (handled by pylint-pytest plugin) ---
+    "redefined-outer-name",   # pytest fixtures
+    "unused-argument",        # fixtures passed to tests
+
+    # --- Style preferences ---
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-few-public-methods", # API test classes often have few methods
+    "duplicate-code",         # Some duplication in test data is acceptable
+
+    # --- Design ---
+    "too-many-arguments",     # API test functions often need many params
+    "too-many-locals",
+    "too-many-instance-attributes",
+
+    # --- Import handling for pytest ---
+    "import-error",           # pytest pythonpath handles this
+]
+
+enable = [
+    "unused-import",
+    "unused-variable",
+    "undefined-variable",
+    "missing-timeout",        # Critical for API tests: always set timeouts!
+]
+
+[tool.pylint.DESIGN]
+max-args = 10
+max-locals = 20
+
+[tool.pylint.SIMILARITIES]
+min-similarity-lines = 8
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+
+# ==============================================================
+# Ruff — Fast Python linter & formatter (replaces Flake8, isort, etc.)
+# Docs: https://docs.astral.sh/ruff/configuration/
+# ==============================================================
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["."]
+
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "allure-results",
+    "allure-report",
+    ".pytest_cache",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (unused imports, undefined names)
+    "I",    # isort (import sorting)
+    "N",    # pep8-naming
+    "UP",   # pyupgrade (modernize syntax)
+    "B",    # flake8-bugbear (likely bugs)
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate (commented-out code)
+    "RUF",  # ruff-specific rules
+    "PT",   # flake8-pytest-style
+    "RET",  # flake8-return
+    "ARG",  # flake8-unused-arguments
+    "DTZ",  # flake8-datetimez (timezone-aware datetimes)
+    "T20",  # flake8-print
+    "Q",    # flake8-quotes
+]
+
+ignore = [
+    # --- pytest conventions ---
+    "PT004",   # fixture does not return anything
+    "PT011",   # pytest.raises(Exception) too broad
+    "PT012",   # pytest.raises block should contain a single statement
+    "ARG001",  # unused function argument (pytest fixtures)
+    "ARG002",  # unused method argument
+    # --- Test-friendly ---
+    "RET504",  # unnecessary assignment before return
+    "RET505",  # superfluous-else-return
+    "TRY003",  # long exception messages
+    "TRY300",  # try-else
+    "TRY301",  # abstract raise to inner function
+    "B008",    # function call in default arg (pytest idiom)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",     # assert is expected in tests
+    "PLR2004",  # magic values in tests
+    "T20",      # allow print statements in tests for debugging
+    "PT018",    # composite assertions in tests
+    "E501",     # long test data lines
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "schemas", "tests"]
+force-sort-within-sections = true
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+parametrize-names-type = "tuple"
+parametrize-values-type = "tuple"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-v --alluredir=allure-results"
+markers = [
+    "smoke: critical-path tests for fast feedback on every push",
+    "regression: exhaustive tests for nightly runs and pre-release validation",
+]
